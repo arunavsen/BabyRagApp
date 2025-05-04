@@ -1,0 +1,1 @@
+﻿Semantic Kernel is an SDK from Microsoft that helps developers build AI apps using LLMs. It supports plugins, planning, memory, and embeddings.

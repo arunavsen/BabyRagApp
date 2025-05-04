@@ -1,1 +1,3 @@
-﻿Semantic Kernel is an SDK from Microsoft that helps developers build AI apps using LLMs. It supports plugins, planning, memory, and embeddings.
+﻿Semantic Kernel is a .NET SDK by Microsoft that helps integrate AI into apps.
+Ollama is a local runtime that runs LLMs like Mistral or LLaMA on your own machine.
+RAG means Retrieval-Augmented Generation, a technique to add custom knowledge into AI prompts.

@@ -122,7 +122,7 @@ public class OllamaChatCompletion : IChatCompletionService
     }
 
 
-    public ChatHistory CreateNewChat(string? instructions = null)
+    public static ChatHistory CreateNewChat(string? instructions = null)
     {
         var chat = new ChatHistory();
         if (!string.IsNullOrEmpty(instructions))

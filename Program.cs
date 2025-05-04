@@ -1,7 +1,72 @@
-﻿using BabyRagApp;
+﻿#region Simpler Version of the RAG Code using Ollama and Mistral 
+//using BabyRagApp;
 
-Console.WriteLine("Ask your question:");
-string prompt = Console.ReadLine();
+//Console.WriteLine("Ask your question:");
+//string prompt = Console.ReadLine();
 
-string response = await OllamaService.AskOllamaAsync("mistral", prompt);
-Console.WriteLine("\nOllama says:\n" + response);
+//string response = await OllamaService.AskOllamaAsync("mistral", prompt);
+//Console.WriteLine("\nOllama says:\n" + response);
+#endregion
+
+
+#region Simpler Version of the RAG Code using Ollama and Mistral and Semantic Kernal (Streaming)
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+
+// Create a builder for the Semantic Kernel
+var builder = Kernel.CreateBuilder();
+
+// Register the OllamaChatCompletion service with the specified URL and model name
+builder.Services.AddSingleton<IChatCompletionService>(new OllamaChatCompletion("http://localhost:11434", "mistral"));
+
+// Build the kernel from the configured services
+var kernel = builder.Build();
+
+// Retrieve the chat completion service from the kernel
+var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+
+// Create a new chat history instance
+var chat = new ChatHistory();
+
+// Add a system message to the chat history to define the assistant's role
+chat.AddSystemMessage("You are an assistant AI helping the user understand AI concepts.");
+
+// Set the console text color to dark magenta for the prompt
+Console.ForegroundColor = ConsoleColor.DarkMagenta;
+// Display a message to the user indicating they can ask questions
+Console.WriteLine("Ask anything about AI (type 'exit' to quit):");
+// Reset the console text color to default
+Console.ResetColor();
+
+// Start an infinite loop to continuously accept user input
+while (true)
+{
+    // Set the console text color to dark yellow for user input prompt
+    Console.ForegroundColor = ConsoleColor.DarkYellow;
+    // Prompt the user for input
+    Console.Write("User: ");
+    // Read the user's input from the console
+    var userInput = Console.ReadLine();
+    // Check if the user wants to exit the loop
+    if (string.Equals(userInput, "exit", StringComparison.OrdinalIgnoreCase))
+        break; // Exit the loop if the user types 'exit'
+
+    // Add the user's message to the chat history
+    chat.AddUserMessage(userInput);
+
+    // Get the chat message contents asynchronously from the chat completion service
+    var result = await chatCompletionService.GetChatMessageContentsAsync(chat);
+    // Retrieve the last response from the result
+    var response = result.Last().Content;
+
+    // Set the console text color to dark gray for the assistant's response
+    Console.ForegroundColor = ConsoleColor.DarkGray;
+    // Display the assistant's response to the user
+    Console.WriteLine($"Assistant: {response}");
+}
+
+
+
+#endregion

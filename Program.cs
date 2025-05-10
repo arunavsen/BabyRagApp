@@ -131,47 +131,52 @@
 
 #region Simpler Version of the RAG Code using Ollama and Mistral and Semantic Kernal with "Knowledge.txt" File (Non-Streaming)
 
-using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel;
-using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.SemanticKernel.ChatCompletion;
+//using Microsoft.SemanticKernel;
+//using Microsoft.Extensions.DependencyInjection;
 
-// Create a builder for the Semantic Kernel
-var builder = Kernel.CreateBuilder();
+//// Create a builder for the Semantic Kernel
+//var builder = Kernel.CreateBuilder();
 
-// Register the OllamaChatCompletion service with the default constructor
-builder.Services.AddSingleton<IChatCompletionService, OllamaChatCompletion>();
+//// Register the OllamaChatCompletion service with the default constructor
+//builder.Services.AddSingleton<IChatCompletionService, OllamaChatCompletion>();
 
-// Build the kernel from the configured services
-var kernel = builder.Build();
+//// Build the kernel from the configured services
+//var kernel = builder.Build();
 
-// Retrieve the chat completion service from the kernel
-var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
+//// Retrieve the chat completion service from the kernel
+//var chatCompletionService = kernel.GetRequiredService<IChatCompletionService>();
 
-// Step 1: Load knowledge.txt
-string knowledgeText = File.ReadAllText(@"D:\Own Projects\BabyRagApp\knowledge.txt");
+//// Step 1: Load knowledge.txt
+//string knowledgeText = File.ReadAllText(@"D:\Own Projects\BabyRagApp\knowledge.txt");
 
-// Start an infinite loop to continuously accept user input
-while (true)
-{
-    // Prompt the user for input
-    Console.Write("User > ");
+//// Start an infinite loop to continuously accept user input
+//while (true)
+//{
+//    // Prompt the user for input
+//    Console.Write("User > ");
 
-    // Read the user's input from the console
-    var userInput = Console.ReadLine();
+//    // Read the user's input from the console
+//    var userInput = Console.ReadLine();
 
-    // Step 2: Create chat prompt with knowledge
-    var chat = OllamaChatCompletion.CreateNewChat("You are an assistant AI. Use the knowledge provided to answer the user's questions.");
+//    // Step 2: Create chat prompt with knowledge
+//    var chat = OllamaChatCompletion.CreateNewChat("You are an assistant AI. Use the knowledge provided to answer the user's questions.");
 
-    // Add the user's message along with the knowledge text to the chat
-    chat.AddUserMessage($"{knowledgeText}\n\nUser: {userInput}");
+//    // Add the user's message along with the knowledge text to the chat
+//    chat.AddUserMessage($"{knowledgeText}\n\nUser: {userInput}");
 
-    // Step 3: Get response from the chat completion service
-    var reply = await chatCompletionService.GetChatMessageContentsAsync(chat);
+//    // Step 3: Get response from the chat completion service
+//    var reply = await chatCompletionService.GetChatMessageContentsAsync(chat);
 
-    // Display the AI's response to the user
-    Console.WriteLine($"AI > {reply.Last().Content}");
-}
+//    // Display the AI's response to the user
+//    Console.WriteLine($"AI > {reply.Last().Content}");
+//}
 
 
 
 #endregion
+
+using BabyRagApp.RagComponents;
+
+var ragChatRunner = new RagChatRunner();
+await ragChatRunner.RunAsync();

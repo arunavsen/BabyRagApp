@@ -175,8 +175,12 @@
 
 
 #endregion
+#region Simpler Version of the RAG Code using Ollama, Mistral, nomic-embed-text and  Semantic Kernal with "Knowledge.txt" File (Streaming) embedding approach
 
 using BabyRagApp.RagComponents;
 
 var ragChatRunner = new RagChatRunner();
 await ragChatRunner.RunAsync();
+
+#endregion
+

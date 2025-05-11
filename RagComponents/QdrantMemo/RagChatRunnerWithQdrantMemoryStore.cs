@@ -1,6 +1,4 @@
-﻿// Import for chat completion functionality from Semantic Kernel
-using Microsoft.SemanticKernel.ChatCompletion;
-// Import core Semantic Kernel functionality
+﻿using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel;
 
 namespace BabyRagApp.RagComponents.QdrantMemo

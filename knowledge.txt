@@ -1,3 +1,10 @@
-﻿Semantic Kernel is a .NET SDK by Microsoft that helps integrate AI into apps.
-Ollama is a local runtime that runs LLMs like Mistral or LLaMA on your own machine.
-RAG means Retrieval-Augmented Generation, a technique to add custom knowledge into AI prompts.
+﻿KAZ Software was established by Wahid Choudhury, who serves as the founder and CEO.
+The company specializes in custom software solutions, including web, mobile, and desktop applications.
+It employs over 150 developers skilled in technologies like .NET, Java, Python, React, and Angular.
+KAZ serves global clients in industries such as healthcare, finance, e-commerce, and education.
+The company is known for its agile methodologies, ensuring high-quality code and timely delivery.
+While specific co-founder details are unavailable, Wahid Choudhury leads the core vision.
+Notable developers or team leads are not publicly named, but KAZ hires top talent in Bangladesh.
+The company has won awards, including the Basis Outsourcing Award, for its contributions.
+KAZ’s office is located in Mohakhali, Dhaka, a key tech hub in Bangladesh.
+It emphasizes innovation, transparency, and client satisfaction in its operations.

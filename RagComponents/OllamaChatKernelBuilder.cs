@@ -11,9 +11,10 @@ public static class OllamaChatKernelBuilder
     {
         var builder = Kernel.CreateBuilder();
         builder.Services.AddSingleton<IChatCompletionService>(new OllamaChatCompletion());
-        builder.Services.AddSingleton<ITextEmbeddingGenerationService>(
-    new CustomEmbeddingService("http://localhost:11434", "nomic-embed-text")
-);
+        builder.Services.AddSingleton<ITextEmbeddingGenerationService>
+            (
+                new CustomEmbeddingService("http://localhost:11434", "nomic-embed-text")
+            );
 
         return builder.Build();
     }

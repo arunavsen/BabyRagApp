@@ -1,0 +1,52 @@
+[
+  {
+    "question": "Who led India to its first ever World Cup victory?",
+    "expectedAnswer": "Kapil Dev",
+    "requiredKeywords": [ "kapil", "dev", "1983", "world cup" ]
+  },
+  {
+    "question": "Who is known as 'The Wall' in Indian cricket?",
+    "expectedAnswer": "Rahul Dravid",
+    "requiredKeywords": [ "rahul", "dravid", "wall" ]
+  },
+  {
+    "question": "Which Indian cricketer is famous for delivering deadly yorkers?",
+    "expectedAnswer": "Jasprit Bumrah",
+    "requiredKeywords": [ "bumrah", "yorker", "bowling" ]
+  },
+  {
+    "question": "Who is the Little Master of Indian cricket?",
+    "expectedAnswer": "Sachin Tendulkar",
+    "requiredKeywords": [ "sachin", "tendulkar", "little master" ]
+  },
+  {
+    "question": "Which stadium in Kolkata is known for iconic cricket matches?",
+    "expectedAnswer": "Eden Gardens",
+    "requiredKeywords": [ "eden", "gardens", "kolkata", "stadium" ]
+  },
+  {
+    "question": "Who captained India before Virat Kohli in ODIs?",
+    "expectedAnswer": "MS Dhoni",
+    "requiredKeywords": [ "dhoni", "captain", "odi" ]
+  },
+  {
+    "question": "Which Indian cricketer has the nickname 'Hitman'?",
+    "expectedAnswer": "Rohit Sharma",
+    "requiredKeywords": [ "rohit", "sharma", "hitman" ]
+  },
+  {
+    "question": "Who is the current coach of the Indian men's cricket team?",
+    "expectedAnswer": "Rahul Dravid",
+    "requiredKeywords": [ "rahul", "dravid", "coach" ]
+  },
+  {
+    "question": "Which Indian batsman is famous for chasing targets?",
+    "expectedAnswer": "Virat Kohli",
+    "requiredKeywords": [ "virat", "kohli", "chase" ]
+  },
+  {
+    "question": "Who was the captain during India’s 2011 World Cup win?",
+    "expectedAnswer": "MS Dhoni",
+    "requiredKeywords": [ "dhoni", "2011", "captain" ]
+  }
+]

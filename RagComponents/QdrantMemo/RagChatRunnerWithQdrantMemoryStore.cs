@@ -95,5 +95,17 @@ namespace BabyRagApp.RagComponents.QdrantMemo
             // Display confirmation of how many chunks were loaded
             Console.WriteLine($"✅ Loaded {chunks.Count} knowledge chunks.");
         }
+
+        public async Task<List<string>> GetTopKRelevantDocsAsync(string query, int k = 5)
+        {
+            // Generate embedding for the query
+            var queryEmbedding = await _embedder.GenerateEmbeddingAsync(query);
+
+            // Perform vector search using Qdrant
+            var topChunks = await _memory.SearchAsync(queryEmbedding, k); // optional k parameter
+
+            return topChunks.ToList();
+        }
+
     }
 }

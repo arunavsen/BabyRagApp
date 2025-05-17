@@ -6,11 +6,14 @@ namespace BabyRagApp.Testing
     public partial class RetrieverEvaluator
     {
         private readonly RagChatRunnerWithQdrantMemoryStore _rag;
+        private readonly RetrievalMetrics _metrics;
 
         public RetrieverEvaluator(RagChatRunnerWithQdrantMemoryStore rag)
         {
             _rag = rag;
+            _metrics = new RetrievalMetrics();
         }
+        
         public async Task RunTestsAsync(string testDataPath)
         {
             var json = await File.ReadAllTextAsync(testDataPath);
@@ -28,8 +31,8 @@ namespace BabyRagApp.Testing
                 return;
             }
 
-            int totalTests = testCases.Count;
-            int totalRelevantRetrieved = 0;
+            // Reset metrics before running tests
+            _metrics.ResetMetrics();
 
             foreach (var testCase in testCases)
             {
@@ -37,29 +40,32 @@ namespace BabyRagApp.Testing
                 Console.WriteLine($"\n🔍 Question: {testCase.Question}");
 
                 var docs = await _rag.GetTopKRelevantDocsAsync(testCase.Question, 5);
+                
+                // Store the retrieved docs in the test case
+                testCase.RetrievedDocs = docs;
+                
+                // Update metrics and get relevant docs count for this query
+                int relevantDocsForQuestion = _metrics.UpdateWithQuery(docs, testCase.RequiredKeywords);
 
-                var matched = docs.Any(doc =>
-                    testCase.RequiredKeywords.Any(keyword =>
-                        doc.ToLower().Contains(keyword.ToLower())));
+                var anyRelevantFound = relevantDocsForQuestion > 0;
 
-                Console.ForegroundColor = ConsoleColor.Green; // Set color for expected answer
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"✅ Expected: {testCase.ExpectedAnswer}");
 
-                Console.ForegroundColor = ConsoleColor.Cyan; // Set color for retrieved docs
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine($"📄 Retrieved docs: {string.Join(" | ", docs)}");
 
-                Console.ForegroundColor = ConsoleColor.Yellow; // Set color for match found
-                Console.WriteLine($"🎯 Match found: {(matched ? "Yes" : "No")}");
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.WriteLine($"🎯 Any relevant docs: {(anyRelevantFound ? "Yes" : "No")}");
+                Console.WriteLine($"🎯 Relevant documents found: {relevantDocsForQuestion}/{docs.Count}");
 
-                Console.ResetColor(); // Reset to default color
-
-                if (matched)
-                    totalRelevantRetrieved++;
+                Console.ResetColor();
             }
 
-            double precision = (double)totalRelevantRetrieved / totalTests;
+            // Display metrics
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
-            Console.WriteLine($"\n📊 Precision@5: {precision:P2} ({totalRelevantRetrieved}/{totalTests})");
+            Console.WriteLine("\n" + _metrics.GetFormattedMetrics());
+            Console.ResetColor();
         }
     }
 }

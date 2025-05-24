@@ -55,13 +55,34 @@ namespace BabyRagApp.RagComponents.QdrantMemo
                 // Exit the loop if the user types "exit"
                 if (input.Equals("exit", StringComparison.OrdinalIgnoreCase)) break;
 
+                //Use the LLM to rewrite the query before embedding it.
+                var rewrittenQuery = await GetRewrittenQueryAsync(input);
+
                 // Generate an embedding for the user's query
-                var queryEmbedding = await _embedder.GenerateEmbeddingAsync(input);
-                // Search for relevant knowledge chunks using the query embedding
-                var topChunks = await _memory.SearchAsync(queryEmbedding);
+                var queryEmbedding = await _embedder.GenerateEmbeddingAsync(rewrittenQuery);
+
+                // Step 1: Initial retrieval using vector search
+                // Retrieve more chunks than we need for re-ranking
+                int initialK = (int)(RagSettings.VectorSearch.TopN * RagSettings.VectorSearch.ReRankingMultiplier);
+                var initialChunks = await _memory.SearchAsync(queryEmbedding, initialK);
+
+                // Step 2: Re-rank chunks using LLM if we have enough chunks
+                List<string> topChunks;
+                if (initialChunks.Count > 0)
+                {
+                    Console.WriteLine($"Re-ranking {initialChunks.Count} chunks...");
+                    // Apply semantic re-ranking to improve relevance
+                    topChunks = await ReRankChunksAsync(rewrittenQuery, initialChunks);
+                    // Take only the top N chunks after re-ranking
+                    topChunks = topChunks.Take(RagSettings.VectorSearch.TopN).ToList();
+                }
+                else
+                {
+                    topChunks = initialChunks;
+                }
 
                 // Join the retrieved chunks into a single context string
-                var context = string.Join("\n", topChunks);
+                var context = string.Join("\n\n", topChunks);
                 // Create an augmented query that includes both the context and the original question
                 var augmentedQuery = $"Use this context:\n{context}\n\nQuestion: {input}";
 
@@ -96,15 +117,90 @@ namespace BabyRagApp.RagComponents.QdrantMemo
             Console.WriteLine($"✅ Loaded {chunks.Count} knowledge chunks.");
         }
 
-        public async Task<List<string>> GetTopKRelevantDocsAsync(string query, int k = 5)
+
+        public async Task<List<string>> GetTopKRelevantDocsAsync(string query, int k = RagSettings.VectorSearch.TopN)
         {
             // Generate embedding for the query
             var queryEmbedding = await _embedder.GenerateEmbeddingAsync(query);
 
-            // Perform vector search using Qdrant
-            var topChunks = await _memory.SearchAsync(queryEmbedding, k); // optional k parameter
+            // Step 1: Initial retrieval with vector search (get more than we need)
+            int initialK = (int)(k * RagSettings.VectorSearch.ReRankingMultiplier);
+            var initialChunks = await _memory.SearchAsync(queryEmbedding, initialK);
 
-            return topChunks.ToList();
+            // Step 2: Re-rank if we have enough chunks
+            if (initialChunks.Count > 0)
+            {
+                // Apply semantic re-ranking
+                var rerankedChunks = await ReRankChunksAsync(query, initialChunks);
+                // Return only the requested number after re-ranking
+                return rerankedChunks.Take(k).ToList();
+            }
+
+            return initialChunks;
+        }
+
+        
+        public async Task<string> GetRewrittenQueryAsync(string original)
+        {
+            var prompt = $"Rewrite this question clearly and fully so that it is self-contained: {original}";
+            var reply = await _chatService.GetChatMessageContentsAsync(prompt);
+            return reply.LastOrDefault()?.Content ?? original;
+        }
+
+        /// <summary>
+        /// Performs semantic re-ranking of retrieved chunks using the LLM to score relevance.
+        /// 
+        /// This approach addresses the "embedding space limitation" where vector similarity
+        /// doesn't always capture true semantic relevance. The LLM evaluates each chunk
+        /// against the query and assigns a relevance score, which allows for a more
+        /// accurate ranking beyond what embedding similarity can provide.
+        /// </summary>
+        /// <param name="query">The user's original query</param>
+        /// <param name="chunks">List of text chunks to re-rank</param>
+        /// <returns>Re-ranked list of chunks with most relevant first</returns>
+
+        private async Task<List<string>> ReRankChunksAsync(string query, List<string> chunks)
+        {
+            var scored = new List<(string chunk, double score)>();
+
+            foreach (var chunk in chunks)
+            {
+                // Clearer prompt that encourages just returning a numeric score
+                var prompt = $"Rate the relevance of this context to the question on a scale from 0 to 1. Return ONLY the numeric score without any explanation or additional text.\n\nQuestion: {query}\n\nContext: {chunk}\n\nScore (just the number):";
+                var reply = await _chatService.GetChatMessageContentsAsync(prompt);
+                var scoreStr = reply.LastOrDefault()?.Content?.Trim();
+
+                double score = 0;
+                // Try to parse just the first number in the response if it contains text
+                if (!string.IsNullOrEmpty(scoreStr))
+                {
+                    // Extract the first decimal number from the string
+                    var match = System.Text.RegularExpressions.Regex.Match(scoreStr, @"0*\.?\d+");
+                    if (match.Success && double.TryParse(match.Value, out score))
+                    {
+                        scored.Add((chunk, score));
+                    }
+                    else
+                    {
+                        // If parsing fails, add with a default score to avoid losing chunks
+                        scored.Add((chunk, 0.5));
+                        Console.WriteLine($"Warning: Could not parse score from: {scoreStr}");
+                    }
+                }
+                else
+                {
+                    // Add with default score if no response
+                    scored.Add((chunk, 0.5));
+                }
+            }
+
+            // Even if scoring fails, ensure we return the chunks in their original order
+            if (scored.Count == 0)
+            {
+                return chunks;
+            }
+
+            return scored.OrderByDescending(s => s.score).Select(s => s.chunk).ToList();
         }
 
     }

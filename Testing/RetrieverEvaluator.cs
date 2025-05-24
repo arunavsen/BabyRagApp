@@ -1,4 +1,5 @@
-﻿using BabyRagApp.RagComponents.QdrantMemo;
+﻿using BabyRagApp.RagComponents;
+using BabyRagApp.RagComponents.QdrantMemo;
 using System.Text.Json;
 
 namespace BabyRagApp.Testing
@@ -13,7 +14,7 @@ namespace BabyRagApp.Testing
             _rag = rag;
             _metrics = new RetrievalMetrics();
         }
-        
+
         public async Task RunTestsAsync(string testDataPath)
         {
             var json = await File.ReadAllTextAsync(testDataPath);
@@ -39,11 +40,18 @@ namespace BabyRagApp.Testing
                 Console.ForegroundColor = ConsoleColor.DarkRed;
                 Console.WriteLine($"\n🔍 Question: {testCase.Question}");
 
-                var docs = await _rag.GetTopKRelevantDocsAsync(testCase.Question, 5);
+                // Get the rewritten query using the RAG's query rewriter
+                string rewrittenQuery = await _rag.GetRewrittenQueryAsync(testCase.Question);
                 
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine($"🔄 Rewritten query: {rewrittenQuery}");
+
+                // Use the rewritten query to retrieve documents
+                var docs = await _rag.GetTopKRelevantDocsAsync(rewrittenQuery, RagSettings.VectorSearch.TopN);
+
                 // Store the retrieved docs in the test case
                 testCase.RetrievedDocs = docs;
-                
+
                 // Update metrics and get relevant docs count for this query
                 int relevantDocsForQuestion = _metrics.UpdateWithQuery(docs, testCase.RequiredKeywords);
 

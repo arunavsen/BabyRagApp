@@ -190,7 +190,7 @@ using BabyRagApp.Testing;
 
 var ragChatRunner = new RagChatRunnerWithQdrantMemoryStore();
 //Note: This is the main chat application that allows you to interact with the assistant. You can uncomment this line to run the chat application.
-//await ragChatRunner.RunAsync(); 
+//await ragChatRunner.RunAsync();
 
 // Testing mode
 var evaluator = new RetrieverEvaluator(ragChatRunner);

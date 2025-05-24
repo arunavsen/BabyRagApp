@@ -84,9 +84,29 @@ namespace BabyRagApp.RagComponents.QdrantMemo
             await _client.UpsertAsync(_collectionName, new[] { point });
         }
 
-        // Method to search for similar text chunks using a query embedding
-        public async Task<List<string>> SearchAsync(float[] queryEmbedding, int topN = 3)
+        /// <summary>
+        /// Searches for semantically similar text chunks based on a query embedding.
+        /// The method applies both a top-N filter and a similarity threshold filter:
+        /// 1. First retrieves the top N most similar vectors
+        /// 2. Then filters out results below the similarity threshold
+        /// 
+        /// This double filtering ensures both relevance and quality of matches,
+        /// preventing low-quality results from being included even if they're
+        /// among the top N matches.
+        /// </summary>
+        /// <param name="queryEmbedding">Vector embedding of the query text</param>
+        /// <param name="topN">Maximum number of results to return (default: from RagSettings)</param>
+        /// <param name="threshold">Minimum similarity score (0-1) to include in results (default: from RagSettings)</param>
+        /// <returns>List of text chunks that match the query</returns>
+        public async Task<List<string>> SearchAsync(
+            float[] queryEmbedding, 
+            int? topN = null, 
+            float? threshold = null)
         {
+            // Use provided values or fall back to settings
+            int actualTopN = topN ?? RagSettings.VectorSearch.TopN;
+            float actualThreshold = threshold ?? RagSettings.VectorSearch.SimilarityThreshold;
+            
             // Convert the embedding array to ReadOnlyMemory<float> for the search
             var vector = new ReadOnlyMemory<float>(queryEmbedding);
             
@@ -94,11 +114,12 @@ namespace BabyRagApp.RagComponents.QdrantMemo
             var searchResults = await _client.SearchAsync(
                 _collectionName,
                 vector,
-                limit: (uint)topN
+                limit: (uint)actualTopN
             );
             
-            // Extract the text from each search result and return as a list
+            // Filter by similarity threshold and extract the text from each search result
             return searchResults
+                .Where(result => result.Score >= actualThreshold)
                 .Select(result => result.Payload["text"].StringValue)
                 .ToList();
         }
